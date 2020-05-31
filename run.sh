@@ -1,0 +1,1 @@
+python metadata_input_api.py 2>&1 |tee log/log_.log &

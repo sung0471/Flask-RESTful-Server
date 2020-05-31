@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <title>Misaeng People Life Cycle</title>
+    <meta charset="UTF-8">
+    <style>
+        *{
+            font-family:"함초롬돋움","serif";
+            font-size:10pt;
+        }
+        table{
+            border-collapse: collapse;
+            border-style:solid;
+            border-width:3px;
+            width:100%;
+            table-layout: fixed;
+        }
+        table.error{
+            text-align:center;
+        }
+        td,th{
+            border-style:groove;
+            border-width:3px;
+            width:30px;
+            height:30px;
+        }
+        div.image{
+            text-align: center;
+        }
+        div.title{
+            text-align:center;
+            font-weight:bold;
+            width:50px;
+        }
+        div.show{
+            border-spacing: 1px;
+            display:block;
+            width: 100%;
+            overflow:auto;
+            max-height: 200px;
+        }
+    </style>
+
+    <body>
+        <h2>
+            Misaeng People Life Cycle
+        </h2>
+        <br><br>
+
+        <table>
+            {% for data in dataArr %}
+            <tr>
+                <td>
+                    <div class="title">
+                    {{ data }}
+                    </div>
+                </td>
+                {% for element in dataArr[data] %}
+                <td>
+                    <div class="show">
+                    {{ element }}
+                    </div>
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
