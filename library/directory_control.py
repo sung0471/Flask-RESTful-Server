@@ -1,6 +1,6 @@
 import os
 import platform
-from typing import Union, Optional, List
+from typing import Union, List
 
 nowdir = os.path.abspath(os.path.dirname(__file__))
 basedir = os.path.abspath(os.path.dirname(nowdir))
@@ -36,37 +36,38 @@ def get_extended_path(origin: str, mid: str = '.', extra: str = 'new'):
     return file_name + mid + extra + ext
 
 
-# `19.3.28 add
-# os에 따른 구분 제거 / check_os 함수 사용할 필요 없음
-def get_metadata_dir_path(file_name_list: Union[List[str], str], dir_route: Optional[Union[List[str], str]] = None)\
+# `19.6.11 add
+# get_metadata_dir_path 제거 후, 범용성 늘린 함수 추가
+# return directory path
+def get_file_dir_path(file_name_list: Union[List[str], str], dir_route: Union[List[str], str] = None)\
         -> Union[List[str], str]:
     """
     file_name_list:
-        파일 경로 or 파일 경로의 리스트
-        list of file path or file path
+        파일 명 or 파일 명의 리스트
+        file name or list of file name
     dir_route:
         sub directory의 경로 리스트 or sub directory name or None
         None or list of sub directory path or directory path
     return:
-        메타데이터 파일 경로 or 파일 경로의 리스트
-        metadata file path or list of file path
+        파일 경로 or 파일 경로의 리스트
+        file path or list of file path
     """
-    metadata_dir = os.path.join(basedir, 'metadata')
+    dir_path = ''
     if dir_route is not None:
         if isinstance(dir_route, list):
-            metadata_base = os.path.join(*dir_route)
+            dir_base = os.path.join(*dir_route)
         else:
-            metadata_base = dir_route
-        metadata_dir = os.path.join(metadata_dir, metadata_base)
+            dir_base = dir_route
+        dir_path = os.path.join(dir_path, dir_base)
 
-    if not os.path.exists(metadata_dir):
-        os.makedirs(metadata_dir)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
 
     if isinstance(file_name_list, list):
         metadata_path_list = list()
         for fileName in file_name_list:
-            metadata_path_list.append(os.path.join(metadata_dir, fileName))
+            metadata_path_list.append(os.path.join(dir_path, fileName))
         return metadata_path_list
     else:
-        metadata_path = os.path.join(metadata_dir, file_name_list)
+        metadata_path = os.path.join(dir_path, file_name_list)
         return metadata_path
