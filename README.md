@@ -2,6 +2,7 @@
 
 - 핵심 기능에 필요한 원본 메타데이터는 삭제되어있습니다.
 - 따라서, 실제로 서버가 켜지는 기능만 가능합니다.
+- /metadata/ 에 들어갈 파일들([link](https://drive.google.com/file/d/1fHvNQmwUjJmyXRcf8xOqvZyPPOetmcrm/view?usp=sharing)) : 암호있어 접근불가(제작자 확인용)
 
 ## Requirement
 - Test (20.5.31)
@@ -16,9 +17,11 @@
                 or flask-cors ~3.0.8(recent ver)
 
 ## Directory Description
-### /library/ : 함수들 정의해놓은 python 파일들이 있는 디렉토리
+### '/library/'
+    함수들 정의해놓은 python 파일들이 있는 디렉토리
+    
 1. metadata_class : 메타데이터의 구조를 Class 객체로 선언한 파일
-    - __init__.py : dict() ←→ Class 간의 변환함수 및 모든 python files import
+    - \_\_init\_\_.py : dict() ←→ Class 간의 변환함수 및 모든 python files import
     - convert_type.py : Type 선언 및 검증함수
     - opus.py, season.py, episode.py, sequence.py, scene.py, shot.py
       - 메타데이터 클래스를 선언한 파일
@@ -37,13 +40,36 @@
 5. read_srt.py (lifeCycle 용도)
     - srt 파일을 읽고 처리하기 위한 파일
 
-### /metadata/ : JSON 파일들이 있는 디렉토리
-- [opus_name]/opus_origin.json
-    - 최초 생성된 JSON파일을 백업한 버전
-- [opus_name]/opus_name.json
-    - 최초 생성 이후부터 지속적으로 사용하는 파일
+### '/metadata/'
+    RESTful API에 사용하는 데이터가 있는 디렉토리
 
-### /utils/ : 클래스로 관리되는 python 파일들이 있는 디렉토리
+- view/ : metadata_view_api.py에 사용되는 metadata
+    - character/ : Person images을 저장한 파일
+    - .json : 영상의 메타데이터
+    - .csv : 인물 정보 메타데이터
+
+- lifecylce/ : lifeCycle_api.py에 사용되는 metadata
+    - .json : 영상의 메타데이터
+    - .csv : 인물 맵핑 데이터
+    - .srt : Sound score를 저장한 자막파일
+    
+- input/ : metadata_input_api.py에 사용되는 metadata
+    - opus_id_list.txt : opus의 id를 저장 시 사용하는 파일
+    - [opus_name]/opus_origin.json
+        - 최초 생성된 JSON파일을 백업한 버전
+    - [opus_name]/opus_name.json
+        - 최초 생성 이후부터 지속적으로 사용하는 파일
+
+
+### '/templates/'
+    RESTful API를 Rendering할 Template 파일들이 있는 디렉토리
+
+- view/ : metadata_view_api.py에 사용되는 Templates
+- lifecylce/ : lifeCycle_api.py에 사용되는 Templates
+
+### '/utils/'
+    클래스로 관리되는 python 파일들이 있는 디렉토리
+    
 - metadata_control.py : 메타데이터를 검색, 수정, 저장 등 관리하는 클래스
     - 관리하는 변수
         - self.class_data : 메타데이터를 클래스로 바꿔 저장한 변수
@@ -53,7 +79,10 @@
 - time_control.py : 스톱워치 기능을 위한 클래스
 - video_control.py : 영상 데이터를 관리하기 위한 클래스 및 함수가 포함된 파일
 
-### / : 실행 파일들
+### '/'
+    실행 파일 및 환경설정 파일
+
+- metadata_view_api.py : metadata의 HTML 시각화를 위한 RESTful API
 - lifeCycle_api.py : life_cycle를 출력하기 위한 RESTful API
 - metadata_input_api.py : 메타데이터 입력기에 필요한 기능을 제공하는 RESTful API
 - requirements : window에서 metadata_input_api만을 위한 패키지 목록
@@ -61,8 +90,50 @@
     - metadata_input_api를 실행 가능한 명령어
     - log를 남기면서 Flask 서버를 돌리기 위한 shell 명령어
 
-## API 설명
-### - 공통 사항
+## API 설명 (metadata_view_api.py)
+
+    주소 : /
+    설명 : API 설명 출력
+
+1. JSON의 Raw 데이터를 출력하는 API
+    - 주소 및 설명
+
+          /scenario/<int:scenario_num>      JSON 데이터를 전부 출력
+          /act/<int:scenario_num>           JSON 파일의 key인 "ACT"의 values을 출력
+          /act/<int:scenario_num>/<int:act_num>     한 시나리오의 ACT 하나를 출력
+          /keyword/<int:scenario_num>       특정 시나리오의 ACT > Keyword에 해당하는 모든 values을 출력
+          /scene/<int:scenario_num>         특정 시나리오의 ACT > Keyword > SC에 해당하는 모든 values을 출력
+
+2. 영상의 특정 시간에 해당하는 시간/장소/대본/인물정보를 출력하는 API
+    - ACT > Keyword > SC > Treatment > treatment_key, values의 값
+    - 주소 및 설명
+
+          특정 Scenario, Scene, treatment_key에 해당하는 값을
+          
+          /raw/<int:scenario_num>/<int:sc_num>/<string:treatment_key>  모두 JSON으로 출력
+          /html/<int:scenario_num>/<int:sc_num>/<string:treatment_key>  중복제거하여 HTML 템플릿으로 출력
+          /json/<int:scenario_num>/<int:sc_num>/<string:treatment_key>  중복제거하여 JSON 데이터로 출력
+
+3. 인물의 정보를 출력하는 API
+    - 주소 및 설명
+
+          사람이름 키워드를 받으면 그에 맞는 사람 정보를
+          
+          /html/<string:person_name>    HTMl 템플릿으로 출력
+          /json/<string:person_name>    JSON 데이터로 출력
+
+4. 다른 영상의 특정 시간에 해당하는 데이터 출력하는 API
+
+       api.add_resource(LwMetadata, '/lw')  List 데이터를 JSON 형태로 출력
+
+## API 설명 (lifeCycle_api.py)
+
+    /         API 설명 출력
+    /html     인물들의 lifecycle을 HTML 템플릿으로 출력
+    /json     인물들의 lifecycle을 json 데이터로 출력
+
+## API 설명 (metadata_input_api.py)
+### 공통 사항
 - 모든 주소의 <code>Port=15000</code>로 설정되어있음
 - 모든 API에서 Season, Episode, Sequence, Scene, Shot의 선택은 Get 파라미터로 진행함
     - 예를 들어, Season=1, Episode=2를 선택하고 싶을 경우
@@ -78,6 +149,9 @@
         - Episode에서만 사용
 
 ### 4가지 API 설명
+0. API 설명 출력
+    - 주소 : /
+    
 1. 전처리 데이터를 저장하는 API
     - 주소 : [IP:Port]/preprocess/json
     - 사용하는 get parameter : 없음
