@@ -13,9 +13,8 @@ template_path = get_file_dir_path('lifecycle', 'templates')
 app = Flask(__name__, template_folder=template_path)
 api = Api(app)
 
-file_name = "1005.json"
+file_name = "1001_v3_sum.json"
 file_path = get_file_dir_path(file_name, ['metadata', 'lifecycle'])
-# data=get_data_total("1001_v3_sum.json")
 metadata = MetadataControl(in_filepath=file_path)
 data = metadata.get_life_cycle()
 
