@@ -4,7 +4,7 @@ import os
 from library.make_people_list import get_people_list
 # from library.serialization import TypeEnum, welcome_from_dict, UseFlag
 from library.metadata_class import TypeEnum, class_from_dict, UseFlag
-from library.directory_control import get_metadata_dir_path
+from library.directory_control import get_file_dir_path
 
 null = None
 
@@ -29,44 +29,28 @@ def match_number_length(number, length):
 def data_split(deserial):
     # episode 단위로 자르기
     # 각 배열엔 각 Episode 객체가 있음
-    episodes = []
-    EPISODE_LENGTH = len(deserial.seasons[0].episodes)
-    for i in range(EPISODE_LENGTH):
-        episodes.append(deserial.seasons[0].episodes[i])
+    episodes = deserial.seasons[0].episodes
 
     # episode별 Sequnce 단위로 자르기
     # 각 배열엔 각 episode별 Sequence 객체가 있음
-    sequences = [[] for j in range(EPISODE_LENGTH)]
-    for i in range(EPISODE_LENGTH):
-        episodes.append(episodes[i])
-        SEQUENCE_LENGTH = len(episodes[i].sequences)
-        for j in range(SEQUENCE_LENGTH):
-            sequences[i].append(episodes[i].sequences[j])
+    sequences = [[] for _ in range(len(episodes))]
+    for i, episode in enumerate(episodes):
+        for j, sequence in enumerate(episode.sequences):
+            sequences[i].append(sequence)
 
     # episode별 Scene 단위로 자르기
     # 각 배열엔 각 episode별 Scene 객체가 있음
-    scenes = [[] for j in range(EPISODE_LENGTH)]
-    scene_count_info = {"sceneCount": [0] * EPISODE_LENGTH,
-                        "sceneArrayCount": [0] * EPISODE_LENGTH}  # scene 개수가 있는 배열
-    for i in range(EPISODE_LENGTH):
-        SEQUENCE_LENGTH = len(sequences[i])
-        for j in range(SEQUENCE_LENGTH):
-            SCENE_LENGTH = len(sequences[i][j].scenes)
-            for k in range(SCENE_LENGTH):
-                if sequences[i][j].scenes[k].use_flag == UseFlag.Y:
-                    scenes[i].append(sequences[i][j].scenes[k])
+    scenes = [[] for _ in range(len(episodes))]
+    scene_count_info = {"sceneCount": [0] * len(episodes),
+                        "sceneArrayCount": [0] * len(episodes)}  # scene 개수가 있는 배열
+
+    for i, sequence_list in enumerate(sequences):
+        for j, sequence in enumerate(sequence_list):
+            for k, scene in enumerate(sequence.scenes):
+                if scene.use_flag == UseFlag.Y:
+                    scenes[i].append(scene)
         scene_count_info["sceneCount"][i] = len(scenes[i])
         scene_count_info["sceneArrayCount"][i] = len(scenes[i])+1
-
-    # episode별 Plot 단위로 자르기
-    # 각 배열엔 각 episode별 Plot 객체가 있음
-    plot = [[] for j in range(EPISODE_LENGTH)]
-    for i in range(EPISODE_LENGTH):
-        SCENE_LENGTH = len(scenes[i])
-        for j in range(SCENE_LENGTH):
-            PLOT_LENGTH = is_not_null(scenes[i][j].plot)
-            for k in range(PLOT_LENGTH):
-                plot[i].append(scenes[i][j].plot[k])
 
     return scenes, scene_count_info
 
@@ -89,10 +73,10 @@ def data_rendering(scenes, sceneCountInfo):
     sceneCountInfo["sceneArrayCount"].append(sum(sceneCountInfo["sceneArrayCount"]))
 
     # peopleList를 받아 해당 peopleList를 기준으로 사전(dict)생성
-    default_arr = [0]*(sceneCountInfo["sceneArrayCount"][len(sceneCountInfo["sceneArrayCount"])-1])    # sceneArray 개수의 합만큼 배열생성
     people_list = get_people_list()               # 정리된 peoplelist 데이터를 받음
     data_statistic = dict()
     for name in people_list[0]:
+        default_arr = [0] * (sceneCountInfo["sceneArrayCount"][len(sceneCountInfo["sceneArrayCount"]) - 1])  # sceneArray 개수의 합만큼 배열생성
         data_arr[name] = default_arr
         data_statistic[name] = {"isSeen": 0, "totalSceneNumber": 0,
                                 "startScene": "", "endScene": ""}
@@ -130,7 +114,7 @@ def data_print_to_file(metadataDir, dataArr, extension):
 
 def get_data_total(file_path):
     file_name, extension = os.path.splitext(file_path)
-    metadata_dir = get_metadata_dir_path(file_name)
+    metadata_dir = get_file_dir_path(file_name)
     # metadata 디렉토리에 있는 파일 읽기
     # json > class 객체화
     with open(metadata_dir + extension, 'rt', encoding="utf-8") as file:

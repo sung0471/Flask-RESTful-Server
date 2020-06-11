@@ -130,8 +130,8 @@
                         trobj.appendChild(tdobj);
 
                         // var indexOfTotal=0;
-                        episode_length = jsonobj[key];
-                        for (index in jsonobj[key]) {     // sceneCount의 배열의 index를 순회
+                        episode_length = jsonobj[key].slice(0, -1);
+                        for (index in episode_length) {     // sceneCount의 배열의 index를 순회
                             // indexOfTotal+=jsonobj[key][index];// Episode 별 Scene개수를 더함
                             var tdobj = document.createElement("td");         // <td> 태그 새로 생성
                             // var divobj=document.createElement("div");// <div> 태그객체 생성

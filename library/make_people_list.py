@@ -2,7 +2,7 @@ import json
 import csv
 from typing import List
 
-from library.directory_control import get_metadata_dir_path
+from library.directory_control import get_file_dir_path
 
 
 # json 파일이 여러개일 때 입력받아 하나의 dict으로 합침
@@ -60,14 +60,16 @@ def set_people_list(json_data: dict, csv_data: dict) -> list:
 
 
 def get_people_list() -> list:
+    lifecycle_path = ['metadata', 'lifecycle']
+
     # read json data
     file_name_list = ["1001.metadata-character.json"]
-    metadata_dir = get_metadata_dir_path(file_name_list)
+    metadata_dir = get_file_dir_path(file_name_list, lifecycle_path)
     json_data = json_file_input(metadata_dir)
 
     # read csv data
     csv_name_list = ["PeopleMappingTable.csv"]
-    csv_data_dir = get_metadata_dir_path(csv_name_list)
+    csv_data_dir = get_file_dir_path(csv_name_list, lifecycle_path)
 
     csv_data = csv_file_input(csv_data_dir)
     
@@ -76,7 +78,7 @@ def get_people_list() -> list:
 
     # print peopleList to json file
     people_list_name = ["PeopleList.1toN.json", "PeopleList.Nto1.json"]
-    people_list_dir = get_metadata_dir_path(people_list_name)
+    people_list_dir = get_file_dir_path(people_list_name, lifecycle_path)
 
     json_file_output(people_list_dir, people_list)
 

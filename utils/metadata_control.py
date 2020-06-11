@@ -5,7 +5,7 @@ from random import randint
 from library.people_in_scene import data_split, data_rendering
 from library.metadata_class import *
 from library.read_srt import read_srt
-from library.directory_control import get_metadata_dir_path, get_extended_path
+from library.directory_control import get_file_dir_path, get_extended_path
 from utils.video_control import get_sound_frame
 
 null = None
@@ -32,7 +32,7 @@ def get_opus_id(opus_name=None):
             create opus_id and return it
     """
     assert opus_name is not None, "get_opus_id(): opus_name is required"
-    opus_list_path = get_metadata_dir_path('opus_id_list.txt')
+    opus_list_path = get_file_dir_path('opus_id_list.txt', 'metadata')
     with open(opus_list_path, 'rt') as f:
         opus_name_id_list = f.readlines()
         for opus_name_id in opus_name_id_list:
@@ -58,11 +58,11 @@ class MetadataControl:
             temporarily save any data needed from "Metadata Inputer"
 
         다음 조합의 parameter들을 필수로 입력 받아야함
-        Following parameters must input
+        Following parameters must lifecycle
         [in_filepath] or [in_data, out_filepath]
 
         다음 parameter들의 조합이 가능함
-        Following parameters are possible for input
+        Following parameters are possible for lifecycle
         [in_filepath], [in_filepath, out_filepath],
         [in_data, out_filepath]
 
@@ -104,7 +104,7 @@ class MetadataControl:
         """
         :param video_info:
             입력할 영상의 기본적인 메타데이터 정보들
-            basic metadata information of input video
+            basic metadata information of lifecycle video
                 --> opus_kr_name, opus_name, season_num, episode_num
         :param out_path:
             최종적으로 저장하여 사용할 메타데이터 경로
@@ -559,14 +559,13 @@ class MetadataControl:
         # typeValue : (1: action, 2: face, 3: sound, 4: script)
         result, extra_name = set_type_metadata(self.class_data, value=typeValue)
         result = self.class2dict(result)
-        out_path = get_extended_path(self.metadata_path, mid='.', extra=extra_name)
+        out_path = get_extended_path(self.metadata_path, mid='_', extra=extra_name)
         save_json(result, out_path=out_path)
 
-    def sum_metadata(self, metadata_file_name_list):
-        result = sum_metadata(self.class_data, metadata_file_name_list)
-        result = self.class2dict(result)
-        out_path = get_extended_path(self.metadata_path, mid='.', extra='sum')
-        save_json(result, out_path=out_path)
+    def sum_metadata(self, metadata_file_name_list=None):
+        self.class_data = sum_metadata(self.class_data, metadata_file_name_list)
+        self.metadata_path = get_extended_path(self.metadata_path, mid='_', extra='sum')
+        self.save_class2json()
 
     def get_life_cycle(self):
         scenes, scene_count = data_split(self.class_data)  # class로된 데이터 쪼개서 Episode별 Scene 객체들로 저장
@@ -662,7 +661,8 @@ def set_type_metadata(deserial, value=1):
                         result.seasons[0].episodes[e].sequences[s].scenes[sc].shots[sh].faces = face_list.copy()
     elif value == 3:
         srt_filename = ['misaeng.S1.E0001_2.srt']
-        srt_data = read_srt(srt_filename)
+        srt_file_path = get_file_dir_path(srt_filename, ['metadata', 'lifecycle'])
+        srt_data = read_srt(srt_file_path)
         srt_index = 0
 
         # sound metadata set
@@ -779,7 +779,7 @@ def sum_metadata(result, file_name_list=None):
     # 합칠 json 파일들
     if file_name_list is None:
         file_name_list = ["1001_v1_face.json", "1001_v1_action.json", "1001_v1_script.json", "1001_v3_sound.json"]
-    file_dir_list = get_metadata_dir_path(file_name_list)
+    file_dir_list = get_file_dir_path(file_name_list, ['metadata', 'lifecycle'])
     opus_obj_list = list()
 
     for file_dir in file_dir_list:

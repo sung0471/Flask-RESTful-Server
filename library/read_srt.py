@@ -1,10 +1,7 @@
-from library.directory_control import get_metadata_dir_path
+from library.directory_control import get_file_dir_path
 
 
-def read_srt(file_name):
-    # file_name=['misaeng.S1.E0001.srt']
-    srt_file_dir = get_metadata_dir_path(file_name)
-
+def read_srt(srt_file_dir):
     srt_data = list()
     for srtFile in srt_file_dir:
         f = open(srtFile, 'r', encoding='UTF8')
@@ -26,6 +23,7 @@ def read_srt(file_name):
 
 if __name__ == '__main__':
     filename = ['misaeng.S1.E0001.srt']
-    srtdata = read_srt(filename)
+    file_path = get_file_dir_path(filename, ['metadata', 'lifecycle'])
+    srtdata = read_srt(file_path)
 
     print(srtdata[0:5])
