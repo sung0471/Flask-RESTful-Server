@@ -1,6 +1,11 @@
+"""
+Description
+    Functions to search/modify/save desired metadata about video
+"""
+
 from flask import Flask, make_response, request
 from flask_restful import Resource, Api
-from library.directory_control import get_metadata_dir_path
+from library.directory_control import get_file_dir_path
 from utils.metadata_control import MetadataControl
 from utils.time_control import TimeControl
 from flask_cors import CORS
@@ -18,6 +23,53 @@ cors = CORS(app, resources={r"/*": {"origins": "IP addr"}})
 
 # Metadata variable
 metadata = dict()
+
+
+def get_description():
+    dict_data = dict()
+    dict_data['/preprocess/json'] = '전처리 데이터를 저장하는 API'
+    dict_data['/opus/struct/json?season=a & episode=b & save=False'] =\
+        'season = a, episode = b인 메타데이터 구조화 정보를 반환<br>' \
+        'save = 완전 저장 여부'
+    dict_data['/opus/all/json'] = 'opus 단위의 전체 메타데이터를 반환'
+    dict_data['/opus/episode/json?season=a & episode=b & save=False & no_full=False'] =\
+        'episode 단위로 메타데이터를 반환하는 기능<br>' \
+        'save = 완전 저장 여부<br>' \
+        'no_full=False : episode 전체 반환'
+    dict_data['/opus/scene/json?season=a & episode=b & sequence=c & scene=d & save=False'] =\
+        'scene 단위로 메타데이터를 반환하는 기능<br>' \
+        'save = 완전 저장 여부'
+    dict_data['/opus/shot/json?season=a & episode=b & sequence=c & scene=d & shot=e & save=False'] =\
+        'shot 단위로 메타데이터를 반환하는 기능<br>' \
+        'save = 완전 저장 여부'
+    dict_data['/opus/total_num?season=a & episode=b'] = 'Scene, Shot 누적합을 반환' \
+                                                        'if episode != 0: season = a, episode = b인 누적합을 반환' \
+                                                        'if episode == 0: season = a인 누적합 정보를 모두 반환하는 기능'
+
+    api_error_msg = '<h2>Metadata Input RESTful API List</h2>'
+    api_error_msg += '<table border="1" style="border-collapse:collapse">'
+    for key, value in dict_data.items():
+        new_key = str()
+        for char in key:
+            if char == '<':
+                new_key += '&lt;'
+            elif char == '>':
+                new_key += '&gt;'
+            else:
+                new_key += char
+        api_error_msg += '<tr><td>{}</td> <td>{}</td></tr>'.format(new_key, value)
+    api_error_msg += '</table>'
+
+    return api_error_msg
+
+
+class ApiDescription(Resource):
+    def get(self):
+        api_description = get_description()
+
+        res = make_response(api_description)
+        res.headers['Content-type'] = 'text/html; charset=utf-8'
+        return res
 
 
 def get_param_parsing(param_type: str) -> Tuple[List[int], bool, bool]:
@@ -62,8 +114,8 @@ def get_metadata_control(opus: str = None, video_data: dict = None) -> MetadataC
 
     new_file = opus + '.json'
     origin_file = opus + '.origin.json'
-    opus_path = get_metadata_dir_path(new_file, dir_route=opus)
-    origin_path = get_metadata_dir_path(origin_file, dir_route=opus)
+    opus_path = get_file_dir_path(new_file, dir_route=['metadata', 'lifecycle', opus])
+    origin_path = get_file_dir_path(origin_file, dir_route=['metadata', 'lifecycle', opus])
 
     if opus not in metadata.keys() or metadata[opus] is None:
         print('There is no opus data : {}\n'
@@ -82,7 +134,7 @@ def get_metadata_control(opus: str = None, video_data: dict = None) -> MetadataC
                     metadata[opus] = MetadataControl.create_metadata_opus(video_info=video_info, out_path=opus_path)
                 else:
                     assert False, 'Cannot create {}.\n' \
-                                  'Please input value : "video_info"'.format(new_file)
+                                  'Please lifecycle value : "video_info"'.format(new_file)
 
     if video_info is not None:
         metadata[opus].create_metadata_episode(video_info)
@@ -354,6 +406,8 @@ class TotalSceneShotNum(Resource):
         return res
 
 
+# API들을 설명하는 API
+api.add_resource(ApiDescription, '/')
 # 전처리 데이터를 저장하는 API
 # API to store preprocessing data
 api.add_resource(Preprocess, '/preprocess/json')
@@ -369,7 +423,7 @@ api.add_resource(TotalSceneShotNum, '/<string:opus>/total_num')
 
 
 if __name__ == '__main__':
-    opus_list_path = get_metadata_dir_path('opus_id_list.txt')
+    opus_list_path = get_file_dir_path('opus_id_list.txt', ['metadata', 'lifecycle'])
     with open(opus_list_path, 'wt+') as f:
         opus_name_id_list = f.readlines()
         for line in opus_name_id_list:
