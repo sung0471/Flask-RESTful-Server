@@ -146,7 +146,7 @@ def get_description(description_type=None):
         dict_data['/html/<string:name>'] = '사람이름 키워드를 받으면 그에 맞는 사람 정보를 HTML template 출력'
         dict_data['/json/<string:name>'] = '사람이름 키워드를 받으면 그에 맞는 사람 정보를 JSON 데이터 출력'
 
-        dict_data['/lovew?current_time=h:mm:ss'] = '재생 시간에 따른 데이터 출력'
+        dict_data['/lw?current_time=h:mm:ss'] = '재생 시간에 따른 데이터 출력'
 
         api_error_msg = '<h2>RESTful API List</h2>'
         api_error_msg += '<table border="1" style="border-collapse:collapse">'
