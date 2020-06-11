@@ -27,7 +27,8 @@ metadata = dict()
 
 def get_description():
     dict_data = dict()
-    dict_data['/preprocess/json'] = '전처리 데이터를 저장하는 API'
+    dict_data['/preprocess/json'] = '전처리 데이터를 저장하는 API<br>' \
+                                    '서버에서 JSON데이터를 받아야 동작'
     dict_data['/opus/struct/json?season=a & episode=b & save=False'] =\
         'season = a, episode = b인 메타데이터 구조화 정보를 반환<br>' \
         'save = 완전 저장 여부'
@@ -114,8 +115,8 @@ def get_metadata_control(opus: str = None, video_data: dict = None) -> MetadataC
 
     new_file = opus + '.json'
     origin_file = opus + '.origin.json'
-    opus_path = get_file_dir_path(new_file, dir_route=['metadata', 'lifecycle', opus])
-    origin_path = get_file_dir_path(origin_file, dir_route=['metadata', 'lifecycle', opus])
+    opus_path = get_file_dir_path(new_file, dir_route=['metadata', 'input', opus])
+    origin_path = get_file_dir_path(origin_file, dir_route=['metadata', 'input', opus])
 
     if opus not in metadata.keys() or metadata[opus] is None:
         print('There is no opus data : {}\n'
@@ -423,7 +424,7 @@ api.add_resource(TotalSceneShotNum, '/<string:opus>/total_num')
 
 
 if __name__ == '__main__':
-    opus_list_path = get_file_dir_path('opus_id_list.txt', ['metadata', 'lifecycle'])
+    opus_list_path = get_file_dir_path('opus_id_list.txt', ['metadata', 'input'])
     with open(opus_list_path, 'wt+') as f:
         opus_name_id_list = f.readlines()
         for line in opus_name_id_list:
