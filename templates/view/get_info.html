@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <title>Metadata presentation</title>
+    <meta charset="UTF-8">
+    <style>
+        *{
+            font-family:"함초롬돋움","serif";
+            font-size:15pt;
+        }
+        table{
+            border-collapse: collapse;
+            border-style:solid;
+            border-width:5px;
+            width:100%;
+            table-layout: fixed;
+        }
+        table.error{
+            text-align:center;
+        }
+        td,th{
+            border-style:groove;
+            border-width:3px;
+            width:50px;
+            height:50px;
+        }
+        td.title{
+            text-align:center;
+            font-weight:bold;
+            width:20%;
+        }
+        div.image{
+            text-align: center;
+        }
+        div.show{
+            border-spacing: 1px;
+            display:block;
+            width: 100%;
+            overflow:auto;
+            max-height: 200px;
+        }
+    </style>
+
+    <body>
+        {% if detaildata[0][0] == 'Range of Scene' %}
+            <h2>Error Occured<br>
+            Usable index is following below table</h2>
+            <br><br>
+
+            <table class="error">
+                {% for dataArr in detaildata %}
+                    <tr>
+                    {% if loop.index<6 %}
+                        {% if loop.index==1 %}
+                            {% for data in dataArr %}
+                                    <th>{{ data }}</th>
+                            {% endfor %}
+                        {% else %}
+                            {% for data in dataArr %}
+                                    <td>{{ data }}</td>
+                            {% endfor %}
+                        {% endif %}
+                    {% elif loop.index==6 %}
+                        <td rowspan="2">
+                            {{ dataArr[0] }}
+                        </td>
+                        <td colspan="2">
+                            {{ dataArr[1] }}
+                        </td>
+                    {% else %}
+                        <td colspan="2">
+                            {{ dataArr[0] }}
+                        </td>
+                    {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+
+        {% else %}
+            <h2>
+                {% if scenario_num %}
+                    Scenario Number : {{ scenario_num }}<br>
+                {% endif %}
+                {% if sc_num %}
+                    Scene Number : {{ sc_num }}<br>
+                {% endif %}
+                {% if treatment %}
+                    Keyword : {{ treatment }}<br>
+                {% endif %}
+            </h2>
+            <br><br>
+
+            <table>
+                {% for data in detaildata %}
+                <tr>
+                    <td>
+                        <div class="show">
+                        {% autoescape false %}
+                            {{ data|replace('\n',"<br>") }}
+                        {% endautoescape %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    </body>
+</html>
